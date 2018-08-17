@@ -87,10 +87,10 @@ def lambda_handler(event, context):
                         'rich': True
                     })
             )['Body'].read())
-            status = results['rich']
+            status = results
             twitter_api.PostUpdate(
                 "📍 ?\n" + status[0],
                 media=status[1],
-                in_reply_to_status_id=event['id_str'],
+                in_reply_to_status_id=tweet['id_str'],
                 auto_populate_reply_metadata=True
             )
