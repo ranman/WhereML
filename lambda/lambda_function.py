@@ -21,7 +21,11 @@ TWITTER_SN = twitter_api.VerifyCredentials().screen_name
 
 
 def sign_crc(crc):
-    h = hmac.new(bytes(CONSUMER_SECRET, 'ascii'), bytes(crc, 'ascii'), digestmod=sha256)
+    h = hmac.new(
+        bytes(CONSUMER_SECRET, 'ascii'),
+        bytes(crc, 'ascii'),
+        digestmod=sha256
+    )
     return json.dumps({
         "response_token": "sha256="+b64encode(h.digest()).decode()
     })
@@ -29,7 +33,11 @@ def sign_crc(crc):
 
 def verify_request(event):
     crc = event['headers']['X-Twitter-Webhooks-Signature']
-    h = hmac.new(bytes(CONSUMER_SECRET, 'ascii'), bytes(event['body'], 'utf-8'), digestmod=sha256)
+    h = hmac.new(
+        bytes(CONSUMER_SECRET, 'ascii'),
+        bytes(event['body'], 'utf-8'),
+        digestmod=sha256
+    )
     crc = b64decode(crc[7:])  # strip out the first 7 characters
     return hmac.compare_digest(h.digest(), crc)
 
@@ -43,17 +51,16 @@ def validate_record(tweet):
     ):
         return True
     return False
-    
 
-def lambda_handler(event, context):
-    
+
+def main(event, context):
     # deal with bad requests
     if event.get('path') != WEBHOOK_PATH:
         return {
             'statusCode': 404,
             'body': ''
         }
-    
+
     # deal with subscription calls
     if event.get('httpMethod') == 'GET':
         crc = event.get('queryStringParameters', {}).get('crc_token')
@@ -66,7 +73,7 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': sign_crc(crc)
         }
-    
+
     # deal with bad crc
     if not verify_request(event):
         print("Unable to verify CRC")
@@ -94,3 +101,11 @@ def lambda_handler(event, context):
                 in_reply_to_status_id=tweet['id_str'],
                 auto_populate_reply_metadata=True
             )
+
+
+def lambda_handler(event, context):
+    try:
+        main(event, context)
+    except Exception:
+        print(event, context)
+        raise
