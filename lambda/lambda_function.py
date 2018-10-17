@@ -84,6 +84,8 @@ def main(event, context):
 
     twitter_events = json.loads(event['body'])
     for tweet in twitter_events.get('tweet_create_events', []):
+        if 'extended_tweet' in tweet:
+            tweet = tweet['extended_tweet']
         media = tweet['entities']['media'][0]['media_url']
         if validate_record(tweet):
             results = json.loads(sagemaker.invoke_endpoint(
