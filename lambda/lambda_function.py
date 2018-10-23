@@ -103,11 +103,13 @@ def main(event, context):
                 in_reply_to_status_id=tweet['id_str'],
                 auto_populate_reply_metadata=True
             )
+        else:
+            print("couldn't do anything")
 
 
 def lambda_handler(event, context):
     try:
-        main(event, context)
+        return main(event, context)
     except Exception:
         print(event, context)
         raise
